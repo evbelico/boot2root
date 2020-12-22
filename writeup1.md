@@ -404,7 +404,23 @@ You can replace "Y" by the number you find corresponding in the ascii table:
 
 ## Phase 6
 
-Icampill and fherbine got the solution in their mind ~~~~~~
+The program awaits for combination of 6 numbers.
+I used gdb to display node1, node2, node3... 
+
+(gdb) print node1
+$1 = 253
+(gdb) print node2
+$2 = 725
+(gdb) print node3
+$3 = 301
+(gdb) print node4
+$4 = 997
+(gdb) print node5
+$5 = 212
+(gdb) print node6
+$6 = 432
+
+we can see some value for this var. We know 4 is the first int (README) and it's value is the biggest so i tried to sort numbers by the biggest to the lower. And it's worked. so the combination is 4 2 6 3 1 5. 
 
 # THOR
 
