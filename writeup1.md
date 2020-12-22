@@ -218,17 +218,18 @@ void phase_2(char *param_1)
   return;
 }
 ```
-we got: stack[1] = 1
-stack[1 + 1] = (1 + 1) * 1
-stack[2] = 2
-stack[2 + 1] = (2 + 1) * 2
-stack[3] = 6
-stack[3 + 1] = (3 + 1) * 6
-stack[4] = 24
-stack[4 + 1] = (4 + 1) * 24
-stack[5] = 120
-stack[5 + 1] = (5 + 1) * 120
-stack[6] = 720
+we got: 
+- stack[1] = 1
+- stack[1 + 1] = (1 + 1) * 1
+- stack[2] = 2
+- stack[2 + 1] = (2 + 1) * 2
+- stack[3] = 6
+- stack[3 + 1] = (3 + 1) * 6
+- stack[4] = 24
+- stack[4 + 1] = (4 + 1) * 24
+- stack[5] = 120
+- stack[5 + 1] = (5 + 1) * 120
+- stack[6] = 720
 —> 1 2 6 24 120 720
 
 ## Phase3:
