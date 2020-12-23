@@ -7,7 +7,7 @@ Again, we need to create a buffer overflow, using the previous method :<br/>
 
 Inside `main.c` :
 
-```
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
