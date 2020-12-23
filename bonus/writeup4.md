@@ -47,7 +47,7 @@ Now let's create a buffer overflow to launch `/bin/sh` as `root`. (You might hav
 # Visudo
 
 Once we're `root`, we can edit the `/etc/sudoers` file using `visudo` (under nano).<br/>
-Let's grand `zaz` the exact same rights as root :
+Let's grant `zaz` the exact same rights as root :
 
 ```
 # User privilege specification
